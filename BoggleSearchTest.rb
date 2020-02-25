@@ -1,6 +1,7 @@
 # pseudo code
 class BoggleSearchTest
     require 'matrix'
+    # require 'parallel' says -> Process.fork is not supported by this Ruby
     
     # initialize method is part of the object-creation process in Ruby & it allows you to set the initial values for an object
     # like constructor in JAVA
@@ -13,23 +14,42 @@ class BoggleSearchTest
                 #    ["i","j","k","l"],
                 #    ["m","n","o","p"] ]
 
-# test with 2X2 matrix
+# test with 4X4 matrix
     $matrix1 = Matrix[
-        ["a","b"],
-        ["e","f"]]
+        ["a","b","c","d"],
+        ["e","f","g","h"],
+        ["m","n","o","p"]]
 
     # global variables
     $initialCoordinate
     $beginWith
     $possibleWords = []
 
-
     def findAllPossibleWords()
-        $matrix1.each_with_index do |e, row, col|
-            puts "#{e} at #{row}, #{col}"
+        starting = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        thread =[]
+        $matrix1.each_with_index do |e, row, col| 
+            # execution test using Thread and without Thread
+            # without thread 
+
             work([row,col],$matrix1[row,col])
+
+            # with thread
+            # t = Thread.new{work([row,col],$matrix1[row,col])}
+            # thread.push(t)
+            
         end
-        puts $possibleWords
+        # thread.each {|t| 
+        #     t.join
+        # }
+        
+        # Parallel.map(thread, in_processes: 3) { |c| 187317
+        #     work([c[0],c[1]],$matrix1[c[0],c[1]])
+        # }
+        puts $possibleWords.size()
+        ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        elapsed = ending - starting
+        puts elapsed
     end
 
     def work(coordinate,value)
@@ -60,38 +80,40 @@ class BoggleSearchTest
             end
     end
  
+    $count = 0
     def traverseNeighbour(toBeTraversed,hash,hashList)
-        toBeTraversed.each { |t| 
-            hashList1 = []
-            hashList1.push(hash)
-            hash1 = Hash.new
-            hash1["possibleWords"] = hash["possibleWords"]+$matrix1[t[0],t[1]]
-            hash1["visitedCoordinate"] = t
-            hashList1.push(hash1) 
-            value= hash1["possibleWords"]
-            $possibleWords.push(value)
-            vlist= []
-            hashList.each { |h|
-                vlist.push(h["visitedCoordinate"])
-            }
-            coordinateValueParent = checkCoordinateValue(t)
-            if coordinateValueParent != nil
-                toBeTraversed1 = []
-                getNeighbourOfThisCoordinate(t).compact.each { |n|
-                    if vlist.none? n
-                        toBeTraversed1.push(n)               
-                    end
-                } 
-                if toBeTraversed1 != nil
-                    if toBeTraversed1.size() ==1 && toBeTraversed1[0] == $beginWith
-                        # print "end"
-                        # puts
-                    else
-                        traverseNeighbour(toBeTraversed1,hash1,hashList1)
+            toBeTraversed.each { |t| 
+                hashList1 = []
+                hashList1.push(hash)
+                hash1 = Hash.new
+                hash1["possibleWords"] = hash["possibleWords"]+$matrix1[t[0],t[1]]
+                hash1["visitedCoordinate"] = t
+                hashList1.push(hash1) 
+                value= hash1["possibleWords"]
+                $possibleWords.push(value)
+                vlist= []
+                hashList.each { |h|
+                    vlist.push(h["visitedCoordinate"])
+                    hashList1.push(h)
+                }
+                coordinateValueParent = checkCoordinateValue(t)
+                if coordinateValueParent != nil
+                    toBeTraversed1 = []
+                    getNeighbourOfThisCoordinate(t).compact.each { |n|
+                        if vlist.none? n
+                            toBeTraversed1.push(n)               
+                        end
+                    } 
+                    if toBeTraversed1 != nil
+                        if toBeTraversed1.size() ==1 && toBeTraversed1[0] == $beginWith
+                            # print "end"
+                            # puts
+                        else
+                            traverseNeighbour(toBeTraversed1,hash1,hashList1)
+                        end
                     end
                 end
-            end
-        }
+            }
     end
 
     def getNeighbourOfThisCoordinate(coordinate)
