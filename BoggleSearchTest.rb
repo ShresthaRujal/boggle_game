@@ -42,11 +42,12 @@ class BoggleSearchTest
         # thread.each {|t| 
         #     t.join
         # }
-        
+
         # Parallel.map(thread, in_processes: 3) { |c| 187317
         #     work([c[0],c[1]],$matrix1[c[0],c[1]])
         # }
         puts $possibleWords.size()
+        
         ending = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         elapsed = ending - starting
         puts elapsed
@@ -143,7 +144,21 @@ class BoggleSearchTest
         return coordinate if $matrix1[coordinate[0],coordinate[1]]!=nil && (coordinate[0]>=0 || coordinate[1]>=0)
     end
     
+    def findMeaningFulWords()
+        fileWords=[]
+        File.foreach("../output.txt") { |line|
+            fileWords.push(line)
+        }
+        puts fileWords.size()
+        $possibleWords.each{|pw|
+            if fileWords.include? pw+"\n" 
+                # puts true 
+                puts pw
+            end
+        }
+    end
 end
 
-b = BoggleSearchTest.new()
+b = BoggleSearchTest.new
 b.findAllPossibleWords
+b.findMeaningFulWords
