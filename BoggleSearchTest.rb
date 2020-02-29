@@ -1,4 +1,4 @@
-# pseudo code
+# code by Rujal shrestha
 class BoggleSearchTest
     require 'matrix'
     # require 'parallel' says -> Process.fork is not supported by this Ruby
